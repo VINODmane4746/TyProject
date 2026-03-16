@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StreamAsian</title>
+
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+<!-- ===== NAVBAR ===== -->
+<nav id="navbar">
+  <div class="nav-logo">STREAMASIAN</div>
+  <div class="nav-links">
+    <button class="nav-link active" onclick="filterCat('all')">Home</button>
+    <button class="nav-link" onclick="filterCat('Lecture')">Lectures</button>
+    <button class="nav-link" onclick="filterCat('Workshop')">Workshops</button>
+    <button class="nav-link" onclick="filterCat('Event')">Events</button>
+    <button class="nav-link" onclick="filterCat('Movie')">Movies</button>
+  </div>
+  <div class="nav-right">
+    <input type="text" id="searchBar" placeholder="🔍  Search videos..." oninput="doSearch()"/>
+    <button class="upload-btn" onclick="openUpload()">
+      <span>+</span> Add Video
+    </button>
+    <button class="login-btn">
+      <a href="../StreamAsia_VideoPlayer_login_page.html"> LOGIN </a>
+    </button>
+  </div>
+</nav>
+
+<!-- ===== HERO BANNER ===== -->
+<div id="heroBanner">
+  <video id="heroVideo" autoplay muted loop playsinline></video>
+  <div id="heroBg"></div>
+  <div id="heroContent">
+    <div class="hero-badge">🔴 Featured</div>
+    <div id="heroTitle">Welcome to StreamAsian</div>
+    <div id="heroDesc">Your personal college video library. Upload lectures, workshops, events and watch them anytime — all stored locally on your device.</div>
+    <div class="hero-btns">
+      <button class="btn-play" id="heroPlayBtn" onclick="playHero()">▶ Play</button>
+      <button class="btn-info" onclick="openUpload()">+ Upload Video</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MAIN CONTENT ===== -->
+<div id="mainContent">
+
+  <!-- Category tabs -->
+  <div class="cat-tabs" id="catTabs">
+    <button class="cat-tab active" onclick="filterCat('all',this)">All Videos</button>
+    <button class="cat-tab" onclick="filterCat('Lecture',this)">📖 Lectures</button>
+    <button class="cat-tab" onclick="filterCat('Workshop',this)">💻 Workshops</button>
+    <button class="cat-tab" onclick="filterCat('Event',this)">🏆 Events</button>
+    <button class="cat-tab" onclick="filterCat('Movie',this)">🎬 Movies</button>
+    <button class="cat-tab" onclick="filterCat('Other',this)">📁 Other</button>
+  </div>
+
+  <!-- Empty state -->
+  <div id="emptyState" class="hidden">
+    <div class="empty-icon">🎬</div>
+    <div class="empty-title">No videos yet</div>
+    <div class="empty-sub">Upload your first video to get started.<br>Supports MP4, WebM, MKV, AVI, MOV and more.</div>
+    <button class="upload-btn" onclick="openUpload()" style="margin:0 auto;padding:14px 32px;font-size:15px">+ Upload First Video</button>
+  </div>
+
+  <!-- Video grid -->
+  <div class="row-section" id="videoSection">
+    <div class="row-header">
+      <div class="row-title" id="sectionTitle">All Videos</div>
+      <div class="row-count" id="sectionCount"></div>
+    </div>
+    <div class="video-grid" id="videoGrid"></div>
+  </div>
+
+</div>
+
+
+<!-- ===== UPLOAD MODAL ===== -->
+<div id="uploadModal" class="hidden">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeUpload()">✕</button>
+    <div class="modal-title">Upload Video</div>
+    <div class="modal-sub">Add a video from your device — stored locally in your browser</div>
+
+    <!-- Drop zone -->
+    <div id="dropZone">
+      <input type="file" id="fileInput" accept="video/*" onchange="fileSelected(this)"/>
+      <div class="drop-icon">🎬</div>
+      <div class="drop-title">Click or drag & drop your video here</div>
+      <div class="drop-sub">Any video file from your computer</div>
+      <div class="drop-types">MP4 · WebM · MKV · AVI · MOV · WMV · FLV</div>
+    </div>
+
+    <!-- Selected file info -->
+    <div id="selectedFile" class="hidden">
+      <span>✅</span>
+      <span class="file-name" id="fileName"></span>
+      <span id="fileSize" style="color:var(--text3);font-size:11px;flex-shrink:0"></span>
+    </div>
+
+    <!-- Form -->
+    <div class="field">
+      <label>Video Title *</label>
+      <input type="text" id="vidTitle" placeholder="e.g. Data Structures – Lecture 5"/>
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>Category</label>
+        <select id="vidCat">
+          <option value="Lecture">📖 Lecture</option>
+          <option value="Workshop">💻 Workshop</option>
+          <option value="Event">🏆 Event</option>
+          <option value="Movie">🎬 Movie</option>
+          <option value="Other">📁 Other</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Subject / Tag</label>
+        <input type="text" id="vidTag" placeholder="e.g. Computer Science"/>
+      </div>
+    </div>
+    <div class="field">
+      <label>Description (optional)</label>
+      <textarea id="vidDesc" placeholder="Short description of the video..."></textarea>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeUpload()">Cancel</button>
+      <button class="btn-save" id="saveBtn" onclick="saveVideo()">Save Video</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ===== VIDEO PLAYER MODAL ===== -->
+<div id="playerModal" class="hidden">
+
+  <!-- Top bar -->
+  <div id="playerTop">
+    <button id="closePlayer" onclick="closePlayer()">✕</button>
+    <div>
+      <div id="playerVideoTitle">Video Title</div>
+      <div id="playerVideoMeta"></div>
+    </div>
+  </div>
+
+  <!-- Video element -->
+  <video id="videoEl" onclick="togglePlayPause()"></video>
+
+  <!-- Controls -->
+  <div id="playerControls">
+    <!-- Progress -->
+    <div id="progressContainer" onclick="seekTo(event)" onmousemove="previewSeek(event)">
+      <div id="bufferBar"></div>
+      <div id="progressFilled"></div>
+    </div>
+
+    <div class="controls-row">
+      <!-- Play/Pause -->
+      <button class="ctrl-btn" id="playPauseBtn" onclick="togglePlayPause()">⏸</button>
+      <!-- Skip back -->
+      <button class="ctrl-btn sm" onclick="skipTime(-10)" title="Back 10s">↩10</button>
+      <!-- Skip forward -->
+      <button class="ctrl-btn sm" onclick="skipTime(10)" title="Forward 10s">10↪</button>
+      <!-- Volume -->
+      <button class="ctrl-btn sm" id="muteBtn" onclick="toggleMute()">🔊</button>
+      <input type="range" id="volumeSlider" min="0" max="1" step="0.05" value="1" oninput="setVolume(this.value)"/>
+      <!-- Time -->
+      <span id="timeDisplay">0:00 / 0:00</span>
+      <div class="ctrl-spacer"></div>
+      <!-- Speed -->
+      <button id="speedBtn" onclick="toggleSpeedMenu()">1× Speed</button>
+      <!-- Fullscreen -->
+      <button class="ctrl-btn sm" onclick="toggleFullscreen()">⛶</button>
+    </div>
+  </div>
+
+  <!-- Speed menu -->
+  <div id="speedMenu" class="hidden">
+    <button class="speed-opt" onclick="setSpeed(0.5)">0.5×</button>
+    <button class="speed-opt" onclick="setSpeed(0.75)">0.75×</button>
+    <button class="speed-opt active" onclick="setSpeed(1)">1× Normal</button>
+    <button class="speed-opt" onclick="setSpeed(1.25)">1.25×</button>
+    <button class="speed-opt" onclick="setSpeed(1.5)">1.5×</button>
+    <button class="speed-opt" onclick="setSpeed(2)">2×</button>
+  </div>
+
+</div>
+
+<!-- ===== TOAST ===== -->
+<div id="toast"></div>
+
+
+<script src="app.js"></script>
+</body>
+</html>
