@@ -256,3 +256,75 @@ function doSearch() {
   searchQuery = document.getElementById('searchBar').value.trim();
   renderAll();
 }
+
+// ==================== missing func ====================
+// playHero() - Play hero banner video
+function playHero() {
+  const heroVideo = document.getElementById("heroVideo");
+  if (heroVideo.paused) {
+    heroVideo.play();
+  }
+}
+
+// Seek preview on mouse move
+function previewSeek(event) {
+  const container = document.getElementById("progressContainer");
+  const rect = container.getBoundingClientRect();
+  const percent = (event.clientX - rect.left) / rect.width;
+  // Preview tooltip can be added here if needed
+}
+
+// Seek to time when clicking progress bar
+function seekTo(event) {
+  const container = document.getElementById("progressContainer");
+  const rect = container.getBoundingClientRect();
+  const percent = (event.clientX - rect.left) / rect.width;
+  video.currentTime = percent * video.duration;
+}
+
+// Render all videos with filter and search
+let currentFilter = 'all';
+let searchQuery = '';
+
+function renderAll() {
+  const grid = document.getElementById("videoGrid");
+  grid.innerHTML = "";
+  
+  const tx = db.transaction("videos", "readonly");
+  const store = tx.objectStore("videos");
+  
+  store.openCursor().onsuccess = function (e) {
+    const cursor = e.target.result;
+    if (cursor) {
+      const v = cursor.value;
+      
+      // Filter by category
+      if (currentFilter !== 'all' && v.cat !== currentFilter) {
+        cursor.continue();
+        return;
+      }
+      
+      // Filter by search query
+      if (searchQuery && !v.title.toLowerCase().includes(searchQuery.toLowerCase())) {
+        cursor.continue();
+        return;
+      }
+      
+      const url = URL.createObjectURL(v.file);
+      const card = document.createElement("div");
+      card.className = "video-card";
+      
+      card.innerHTML = `
+        <video src="${url}" class="thumb" style="width: 220px; height: 176px"></video>
+        <div class="video-card-sec">
+          <div class="v-title">${v.title}</div>
+          <div class="v-meta">${v.cat}</div>
+          <button class="video-card-btn" onclick="playVideo('${url}','${v.title}')">Play</button>
+        </div>
+      `;
+      
+      grid.appendChild(card);
+      cursor.continue();
+    }
+  };
+}
